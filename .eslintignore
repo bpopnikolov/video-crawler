@@ -1,0 +1,2 @@
+db/models/index.js
+db/migrations/*.js

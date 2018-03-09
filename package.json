@@ -1,0 +1,35 @@
+{
+  "name": "video-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpopnikolov/video-crawler.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bpopnikolov/video-crawler/issues"
+  },
+  "homepage": "https://github.com/bpopnikolov/video-crawler#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "babel-eslint": "^8.2.2",
+    "chalk": "^2.3.2",
+    "commander": "^2.14.1",
+    "eslint": "^4.18.1",
+    "eslint-config-google": "^0.9.1",
+    "jquery": "^3.3.1",
+    "jsdom": "^11.6.2",
+    "mysql2": "^1.5.2",
+    "prompt": "^1.0.0",
+    "sequelize": "^4.35.2",
+    "sequelize-auto-migrations": "^1.0.2",
+    "utf8": "^3.0.0"
+  }
+}
