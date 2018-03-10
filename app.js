@@ -3,26 +3,14 @@ const program = require('commander');
 const chalk = require('chalk');
 
 const dbController = require('./db/controllers/video');
+const cliHelpers = require('./helpers/cli-helpers');
 const {
     youtubeCrawler,
     vboxCrawler,
 } = require('./crawlers');
-const {
-    Video,
-    User,
-    Source,
-} = require('./db/models');
-
 
 const runAllCrawlers = async (searchWord, pages) => {
-    console.log(
-        chalk.blue.bold('Runing all crawlers...',
-            chalk.red.bold('Searchword:'),
-            chalk.yellow.bold(searchWord),
-            chalk.red.bold('Pages:'),
-            chalk.yellow.bold(pages)),
-    );
-    console.log();
+    cliHelpers.startingCrawlerMsg(searchWord, pages, 'youtube', 'vbox');
 
     let videos = await Promise.all([
         youtubeCrawler
@@ -33,47 +21,63 @@ const runAllCrawlers = async (searchWord, pages) => {
     // console.log(videos);
     videos = videos.reduce((a, b) => a.concat(b), []);
 
-    console.log(chalk.blue.bold('Adding data to Database...'));
+    cliHelpers.addingDataMsg();
 
     // console.log(videos);
     const result = await Promise.all(videos.map((video) => {
-        console.log(chalk.blue.bold('Adding: '), chalk.yellow.bold(video.name));
+        cliHelpers.processingVideoMsg(video);
         return dbController.saveVideoOrUpdate(video);
     }));
 
-    console.log();
-    console.log(chalk.blue.bold('Videos were saved!'));
+    cliHelpers.videosWereSavedMsg();
 };
 
 const runVboxCrawler = async (searchWord, pages) => {
+    cliHelpers.startingCrawlerMsg(searchWord, pages, 'vbox');
+
     const videos = await vboxCrawler
         .getVideosBySearchWord(searchWord, pages);
 
+    cliHelpers.addingDataMsg();
+
     await Promise.all(videos.map(async (video) => {
+        cliHelpers.processingVideoMsg(video);
         return await dbController.saveVideoOrUpdate(video);
     }));
+    cliHelpers.videosWereSavedMsg();
 };
 
 const runYoutubeCrawler = async (searchWord, pages) => {
+    cliHelpers.startingCrawlerMsg(searchWord, pages, 'youtube');
+
     const videos = await youtubeCrawler
         .getVideosBySearchWord(searchWord, pages);
 
+    cliHelpers.addingDataMsg();
+
     await Promise.all(videos.map(async (video) => {
+        cliHelpers.processingVideoMsg(video);
         return await dbController.saveVideoOrUpdate(video);
     }));
+
+    cliHelpers.videosWereSavedMsg();
 };
 
 program
     .version('0.1.0')
-    .option('-a, --action <action>', 'the action the be executed')
     .option('-k, --keyword <keyword>', 'keyword to search for')
     .option('-p, --pages <pages>', 'pages to crawl');
 
 program
     .command('start [crawler]')
-    .description('starting crawler')
+    .description('start all or specific crawler/s')
     .action((crawler, otherCrawlers) => {
         crawler = crawler || 'all';
+
+        if (!program.keyword || !program.pages) {
+            cliHelpers.requiredParamsToStarError('keyword', 'pages');
+            process.exit(1);
+        }
 
         switch (crawler) {
             case 'all':
@@ -81,15 +85,15 @@ program
                 break;
 
             case 'youtube':
-                runYoutubeCrawler();
+                runYoutubeCrawler(program.keyword, program.pages);
                 break;
 
             case 'vbox':
-                runVboxCrawler();
+                runVboxCrawler(program.keyword, program.pages);
                 break;
 
             default:
-                runAllCrawlers();
+                runAllCrawlers(program.keyword, program.pages);
                 break;
         }
     });
