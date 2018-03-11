@@ -2,8 +2,12 @@
 const program = require('commander');
 const chalk = require('chalk');
 
-const dbController = require('./db/controllers/video');
-const cliHelpers = require('./helpers/cli-helpers');
+const videoController = require('./db/controllers/video');
+const {
+    cliHelpers,
+    statisticsHelpers,
+} = require('./helpers');
+
 const {
     youtubeCrawler,
     vboxCrawler,
@@ -26,7 +30,7 @@ const runAllCrawlers = async (searchWord, pages) => {
     // console.log(videos);
     const result = await Promise.all(videos.map((video) => {
         cliHelpers.processingVideoMsg(video);
-        return dbController.saveVideoOrUpdate(video);
+        return videoController.saveVideoOrUpdate(video);
     }));
 
     cliHelpers.videosWereSavedMsg();
@@ -42,7 +46,7 @@ const runVboxCrawler = async (searchWord, pages) => {
 
     await Promise.all(videos.map(async (video) => {
         cliHelpers.processingVideoMsg(video);
-        return await dbController.saveVideoOrUpdate(video);
+        return await videoController.saveVideoOrUpdate(video);
     }));
     cliHelpers.videosWereSavedMsg();
 };
@@ -57,47 +61,55 @@ const runYoutubeCrawler = async (searchWord, pages) => {
 
     await Promise.all(videos.map(async (video) => {
         cliHelpers.processingVideoMsg(video);
-        return await dbController.saveVideoOrUpdate(video);
+        return await videoController.saveVideoOrUpdate(video);
     }));
 
     cliHelpers.videosWereSavedMsg();
 };
 
 program
-    .version('0.1.0')
-    .option('-k, --keyword <keyword>', 'keyword to search for')
-    .option('-p, --pages <pages>', 'pages to crawl');
+    .version('0.1.0');
 
 program
-    .command('start [crawler]')
+    .command('update [crawler]')
+    .option('-k, --keyword <keyword>', 'keyword to search for')
+    .option('-p, --pages <pages>', 'pages to crawl')
     .description('start all or specific crawler/s')
-    .action((crawler, otherCrawlers) => {
+    .action((crawler, cmd) => {
         crawler = crawler || 'all';
 
-        if (!program.keyword || !program.pages) {
+        if (!cmd.keyword || !cmd.pages) {
             cliHelpers.requiredParamsToStarError('keyword', 'pages');
             process.exit(1);
         }
 
         switch (crawler) {
-            case 'all':
-                runAllCrawlers(program.keyword, program.pages);
-                break;
-
             case 'youtube':
-                runYoutubeCrawler(program.keyword, program.pages);
+                runYoutubeCrawler(cmd.keyword, cmd.pages);
                 break;
 
             case 'vbox':
-                runVboxCrawler(program.keyword, program.pages);
+                runVboxCrawler(cmd.keyword, cmd.pages);
                 break;
 
             default:
-                runAllCrawlers(program.keyword, program.pages);
+                runAllCrawlers(cmd.keyword, cmd.pages);
+                break;
+        }
+    });
+
+program
+    .command('statistics <action> [searchWords...]')
+    .description('Get statistics for the crawled videos.')
+    .action((action, searchWords, cmd) => {
+        switch (action) {
+            case 'search':
+                statisticsHelpers.searchByWord(searchWords);
+                break;
+
+            default:
                 break;
         }
     });
 
 program.parse(process.argv);
-// console.log(program);
-// runAllCrawlers();

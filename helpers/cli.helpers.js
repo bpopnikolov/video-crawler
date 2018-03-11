@@ -86,10 +86,38 @@ const processingVideoMsg = (video) => {
     ));
 };
 
+const resultsTitleMsg = (title) => {
+    console.log(
+        chalk.blue.bold(`${title} results:`)
+    );
+};
+
+const printVideoInfo = (video) => {
+    console.log();
+    console.log(chalk.blue.bold(
+        `   Name: ${chalk.yellow.bold(video.name)}`));
+    console.log(chalk.blue.bold(
+        `   Url: ${chalk.white.dim.bold.underline(video.url)}`));
+    console.log(chalk.blue.bold(
+        `   User: ${chalk.yellow.bold(video.User.name)}`));
+    console.log(chalk.blue.bold(
+        `   Published: ${chalk.cyan.dim.bold(video.published)}`));
+    console.log(chalk.blue.bold(
+        `   Views: ${chalk.bold.magenta(video.views)}`));
+    console.log(chalk.blue.bold(
+        `   Likes: ${chalk.bold.green(video.likes)}`));
+    console.log(chalk.blue.bold(
+        `   Dislikes: ${chalk.bold.red(video.dislikes)}`));
+    console.log(chalk.blue.bold(
+        `   Source: ${chalk.white.dim.bold.underline(video.Source.name)}`));
+};
+
 module.exports = {
     requiredParamsToStarError,
     addingDataMsg,
     startingCrawlerMsg,
     videosWereSavedMsg,
     processingVideoMsg,
+    printVideoInfo,
+    resultsTitleMsg,
 };

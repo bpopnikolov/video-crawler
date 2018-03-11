@@ -2,9 +2,10 @@ const {
     Video,
     User,
     Source,
+    sequelize,
 } = require('../models');
 
-module.exports.saveVideoOrUpdate = async (video) => {
+const saveVideoOrUpdate = async (video) => {
     const user = await User.findCreateFind({
         where: {
             name: video.user,
@@ -50,4 +51,45 @@ module.exports.saveVideoOrUpdate = async (video) => {
     });
 
     return videoToSave;
+};
+
+const findVideos = async (searchWords) => {
+    searchWords = searchWords.map((word) => {
+        return {
+            $like: `%${word}%`,
+        };
+    });
+
+    const videos = await Video.findAll({
+        where: {
+            name: {
+                $or: searchWords,
+            },
+        },
+        include: [{
+            model: User,
+            // where: {
+            //     name: {
+            //         $or: searchWords,
+            //     },
+            // },
+        }, {
+            model: Source,
+            // where: {
+            //     name: {
+            //         $or: searchWords,
+            //     },
+            // },
+        }],
+        order: [
+            ['views', 'DESC'],
+        ],
+    });
+
+    return videos;
+};
+
+module.exports = {
+    saveVideoOrUpdate,
+    findVideos,
 };
