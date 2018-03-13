@@ -107,8 +107,17 @@ program
     });
 
 program
-    .command('statistics <action> [otherParams...]')
-    .description('Get statistics for the crawled videos.')
+    .command('statistics <action> <otherParams...>')
+    .description(`Get statistics for the crawled videos.
+
+                commands:
+
+                search: <otherParams...>
+
+                filter: <otherParams...>
+
+                orderBy: <otherParams...>
+    `)
     .action((action, otherParams, cmd) => {
         switch (action) {
             case 'search':
@@ -141,7 +150,7 @@ program
 
 program
     .command('dropdata')
-    .description('Search for data with specific fiter')
+    .description('Delete  data from db')
     .action(() => {
         dbController.dropdb();
     });
