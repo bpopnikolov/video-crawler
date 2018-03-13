@@ -1,11 +1,14 @@
 /* globals process */
 const program = require('commander');
-const chalk = require('chalk');
+
 
 const videoController = require('./db/controllers/video');
+const dbController = require('./db/controllers/database');
 const {
     cliHelpers,
     statisticsHelpers,
+    filterHelpers,
+    orderbyHelpers,
 } = require('./helpers');
 
 const {
@@ -28,10 +31,12 @@ const runAllCrawlers = async (searchWord, pages) => {
     cliHelpers.addingDataMsg();
 
     // console.log(videos);
-    const result = await Promise.all(videos.map((video) => {
+    await Promise.all(videos.map((video) => {
         cliHelpers.processingVideoMsg(video);
         return videoController.saveVideoOrUpdate(video);
-    }));
+    })).catch((err) => {
+        console.log(err);
+    });
 
     cliHelpers.videosWereSavedMsg();
 };
@@ -91,25 +96,54 @@ program
             case 'vbox':
                 runVboxCrawler(cmd.keyword, cmd.pages);
                 break;
+            case 'all':
+                runAllCrawlers(cmd.keyword, cmd.pages);
+                break;
 
             default:
-                runAllCrawlers(cmd.keyword, cmd.pages);
+                cliHelpers.commandNotSupportedMsg();
                 break;
         }
     });
 
 program
-    .command('statistics <action> [searchWords...]')
+    .command('statistics <action> [otherParams...]')
     .description('Get statistics for the crawled videos.')
-    .action((action, searchWords, cmd) => {
+    .action((action, otherParams, cmd) => {
         switch (action) {
             case 'search':
-                statisticsHelpers.searchByWord(searchWords);
+                statisticsHelpers.searchByWord(otherParams);
                 break;
-
+            case 'showUserVideos':
+                statisticsHelpers.showUserVideos(otherParams);
+                break;
+            case 'filter':
+                const column = otherParams[0];
+                const operator = otherParams[1];
+                const value = otherParams[2];
+                const filterLimit = +otherParams[3] ||
+                    Number.MAX_SAFE_INTEGER;
+                filterHelpers
+                    .filterVideos(column, operator, value, filterLimit);
+                break;
+            case 'orderBy':
+                const columnName = otherParams[0];
+                const orderType = otherParams[1];
+                const orderLimit = +otherParams[2] ||
+                    Number.MAX_SAFE_INTEGER;
+                orderbyHelpers.orderVideosBy(columnName, orderType, orderLimit);
+                break;
             default:
+                cliHelpers.commandNotSupportedMsg();
                 break;
         }
+    });
+
+program
+    .command('dropdata')
+    .description('Search for data with specific fiter')
+    .action(() => {
+        dbController.dropdb();
     });
 
 program.parse(process.argv);

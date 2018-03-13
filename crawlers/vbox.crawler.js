@@ -4,6 +4,7 @@ const {
     SEARCHPAGE,
     URLS,
 } = require('./../selectors').vboxSelectors;
+const chalk = require('chalk');
 const {
     generateDomWithCustomRequest,
 } = require('./../dom-parser');
@@ -11,7 +12,16 @@ const {
 const attachScriptToWindow = (window) => {
     const $ = window.$;
 
-    const script = $('script').text();
+    let script = '';
+
+    $('script').each((_, s) => {
+        const $s = $(s);
+        if ($s.text().includes('encodedTitle')) {
+            script = $s.text();
+        }
+    });
+
+    // console.log(script);
     window.eval(script);
 };
 
@@ -24,10 +34,14 @@ const extractVideoDetails = async (video) => {
 
     const removeWhiteSpaces = new RegExp(/\s/, 'g');
     const onlyDigits = new RegExp(/\d+/);
+    /* eslint-disable */
+    const removeUtf8mb4Chars = /(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g;
+    /* eslint-enable */
 
     const name = $(VIDEOPAGE.TITLE)
         .text()
         .toLowerCase()
+        .replace(removeUtf8mb4Chars, '')
         .trim();
 
     const user = $(VIDEOPAGE.USER)
@@ -43,18 +57,18 @@ const extractVideoDetails = async (video) => {
         .text()
         .trim()
         .match(onlyDigits)[0]
-        .replace(removeWhiteSpaces, '');
+        .replace(removeWhiteSpaces, '') || 0;
 
     const dislikes = $(VIDEOPAGE.DISLIKES)
         .text()
         .trim()
-        .replace(removeWhiteSpaces, '');
+        .replace(removeWhiteSpaces, '') || 0;
 
     const views = $(VIDEOPAGE.VIEWS)
         .next()
         .text()
         .trim()
-        .replace(removeWhiteSpaces, '');
+        .replace(removeWhiteSpaces, '') || 0;
 
     return new Video(id, name, video.url, video.duration, published,
         user, +views, +likes, +dislikes, URLS.BASEURL);
@@ -86,6 +100,7 @@ const getVideosFromAllPages = async (url, videoUrls, searchWord,
     currentPage, subPage, numOfPages, pageCount) => {
     const window = await generateDomWithCustomRequest(url);
 
+    // console.log(chalk.bgRed.bold(url));
     attachScriptToWindow(window);
 
     if (window.endLeft || pageCount === numOfPages) {
@@ -148,11 +163,13 @@ const getVideosBySearchWord = async (searchWord, pages) => {
         searchWord, 1, INCREMENT_PAGE, pages - 1, 0);
 
     const allVideos = restOfVideos ? [videos, ...restOfVideos] : [videos];
-
     const result = extractDetailsOnChunks(allVideos);
 
     return result;
 };
+
+// getVideosBySearchWord('azis', 10).catch((err) =>
+//     console.log(err));
 
 module.exports = {
     getVideosBySearchWord,

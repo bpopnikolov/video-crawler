@@ -16,10 +16,15 @@ const extractVideoDetails = async (video) => {
 
     const removeCommasRegExp = new RegExp(/[, ]+/, 'g');
 
+    /* eslint-disable */
+    const removeUtf8mb4Chars = /(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g;
+    /* eslint-enable */
+
     const id = video.url.substring(video.url.indexOf('v=') + 2);
     const name = $(VIDEOPAGE.TITLE)
         .text()
         .toLowerCase()
+        .replace(removeUtf8mb4Chars, '')
         .trim();
 
     const user = $(VIDEOPAGE.USER)
@@ -37,19 +42,19 @@ const extractVideoDetails = async (video) => {
         .find(VIDEOPAGE.LIKES)
         .text()
         .trim()
-        .replace(removeCommasRegExp, '');
+        .replace(removeCommasRegExp, '') || 0;
 
     const dislikes = $likesArea
         .find(VIDEOPAGE.DISLIKES)
         .text()
         .trim()
-        .replace(removeCommasRegExp, '');
+        .replace(removeCommasRegExp, '') || 0;
 
     const views = $(VIDEOPAGE.VIEWS)
         .text()
         .split('views')[0]
         .trim()
-        .replace(removeCommasRegExp, '');
+        .replace(removeCommasRegExp, '') || 0;
 
     // console.log(new Video(name, videoUrl,
     // published, user, +views, +likes, +dislikes));
@@ -143,8 +148,7 @@ const getVideosBySearchWord = async (searchWord, pages) => {
     const url = URLS.SEARCHURL + searchWord;
     const videos = await extractVideosFromPage(url);
 
-    // const restOfVideos = await getVideosFromAllPages(url, [], 0, pages - 1);
-    const restOfVideos = [];
+    const restOfVideos = await getVideosFromAllPages(url, [], 0, pages - 1);
 
     const allVideos = restOfVideos ? [videos, ...restOfVideos] : [videos];
     const result = extractDetailsOnChunks(allVideos);

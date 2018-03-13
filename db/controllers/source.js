@@ -1,30 +1,29 @@
 const {
+    Video,
     User,
+    Source,
+    sequelize,
 } = require('../models');
 
 
-const findUsers = async (searchWords) => {
+const findSources = async (searchWords) => {
     searchWords = searchWords.map((word) => {
         return {
             $like: `%${word}%`,
         };
     });
 
-    const users = await User.findAll({
+    const sources = await Source.findAll({
         where: {
             name: {
                 $or: searchWords,
             },
         },
-        order: [
-            ['name', 'ASC'],
-        ],
     });
 
-    return users;
+    return sources;
 };
 
-
 module.exports = {
-    findUsers,
+    findSources,
 };

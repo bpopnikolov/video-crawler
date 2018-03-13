@@ -87,19 +87,27 @@ const processingVideoMsg = (video) => {
 };
 
 const resultsTitleMsg = (title) => {
+    console.log();
     console.log(
-        chalk.blue.bold(`${title} results:`)
+        chalk.bgBlue.bold(`    ${title} results:    `)
     );
 };
 
-const printVideoInfo = (video) => {
+const printVideoInfo = (video, index = null) => {
     console.log();
+    if (index) {
+        console.log(chalk.blue.bold(
+            `#${index}`
+        ));
+    }
     console.log(chalk.blue.bold(
         `   Name: ${chalk.yellow.bold(video.name)}`));
     console.log(chalk.blue.bold(
         `   Url: ${chalk.white.dim.bold.underline(video.url)}`));
-    console.log(chalk.blue.bold(
-        `   User: ${chalk.yellow.bold(video.User.name)}`));
+    if (video.User) {
+        console.log(chalk.blue.bold(
+            `   User: ${chalk.yellow.bold(video.User.name)}`));
+    }
     console.log(chalk.blue.bold(
         `   Published: ${chalk.cyan.dim.bold(video.published)}`));
     console.log(chalk.blue.bold(
@@ -108,8 +116,38 @@ const printVideoInfo = (video) => {
         `   Likes: ${chalk.bold.green(video.likes)}`));
     console.log(chalk.blue.bold(
         `   Dislikes: ${chalk.bold.red(video.dislikes)}`));
-    console.log(chalk.blue.bold(
-        `   Source: ${chalk.white.dim.bold.underline(video.Source.name)}`));
+    if (video.Source) {
+        console.log(chalk.blue.bold(
+            `   Source: ${chalk.white.dim.bold.underline(video.Source.name)}`));
+    }
+};
+
+const printName = (model, index = null, bg = false) => {
+    let style = chalk.blue.bold;
+    let indexStyle = chalk.blue.bold;
+
+    if (bg) {
+        style = chalk.bgRed.bold;
+        indexStyle = chalk.red.bold;
+    }
+    console.log();
+    if (index) {
+        console.log(indexStyle(
+            `#${index}`
+        ));
+    }
+    console.log(style(
+        `   Name: ${chalk.yellow.bold(model.name)}   `));
+};
+
+const commandNotSupportedMsg = () => {
+    console.log();
+    console.log(chalk.bgRed(
+        chalk.yellow.bold(
+            `   The command is not supported!   `
+        )
+    ));
+    console.log();
 };
 
 module.exports = {
@@ -119,5 +157,7 @@ module.exports = {
     videosWereSavedMsg,
     processingVideoMsg,
     printVideoInfo,
+    printName,
     resultsTitleMsg,
+    commandNotSupportedMsg,
 };

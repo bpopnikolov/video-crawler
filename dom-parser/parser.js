@@ -2,7 +2,7 @@ const jQuery = require('jquery');
 const {
     JSDOM,
 } = require('jsdom');
-const jsdom = require('jsdom/lib/old-api.js').jsdom;
+// const jsdom = require('jsdom/lib/old-api.js').jsdom;
 const axios = require('axios');
 
 
